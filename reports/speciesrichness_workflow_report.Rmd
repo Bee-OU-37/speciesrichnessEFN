@@ -5,6 +5,9 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+source(file.path("..", "R", "helpers.R"))
+project_root <- find_project_root()
+config <- load_project_config(project_root)
 ```
 
 # Overview
@@ -24,10 +27,10 @@ library(spdep)
 # Load prediction rasters
 
 ```{r load-rasters}
-richness_scale1 <- rast("predictions_Q.tif")
-richness_scale2 <- rast("predictions_1m.tif")
-richness_scale3 <- rast("predictions_100m_mean.tif")
-richness_scale4 <- rast("predictions_100m_total.tif")
+richness_scale1 <- rast(file.path(config$paths$prediction_maps, "predictions_Q.tif"))
+richness_scale2 <- rast(file.path(config$paths$prediction_maps, "predictions_1m.tif"))
+richness_scale3 <- rast(file.path(config$paths$prediction_maps, "predictions_100m_mean.tif"))
+richness_scale4 <- rast(file.path(config$paths$prediction_maps, "predictions_100m_total.tif"))
 
 crs(richness_scale1) <- "EPSG:28992"
 crs(richness_scale2) <- "EPSG:28992"
@@ -43,5 +46,5 @@ print(ext(richness_scale4))
 # Continue full reporting analysis
 
 ```{r run-reporting-script}
-source(file.path("..", "analysis", "06. Analyze prediction maps", "Analyse Prediction Patterns.R"))
+source(file.path(config$project_root, "analysis", "06. Analyze prediction maps", "Analyse Prediction Patterns.R"))
 ```

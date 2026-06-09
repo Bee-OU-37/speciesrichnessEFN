@@ -1,6 +1,6 @@
 # speciesrichnessEFN
 
-Reproducible species-richness machine-learning workflow for EFN vegetation data using the existing project algorithms, libraries, and analysis content.
+Reproducible species richness machine learning workflow for EFN vegetation data using the existing project algorithms, libraries, and analysis content.
 
 ## What this refactor changes
 
