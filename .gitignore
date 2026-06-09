@@ -2,3 +2,12 @@
 .Rhistory
 .RData
 .Ruserdata
+
+# Raw and external data inputs (do not version control)
+data/raw/
+data/raw-data/
+data/prediction-maps/
+
+# Common generated outputs
+analysis-output/
+reports/*.html

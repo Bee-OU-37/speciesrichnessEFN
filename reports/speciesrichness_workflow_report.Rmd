@@ -1,0 +1,47 @@
+---
+title: "Species Richness Workflow Report"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+# Overview
+
+This report captures the analysis currently implemented for species-richness prediction maps across spatial scales.
+All code below is based on the existing reporting analysis script and kept consistent with the current workflow.
+
+# Load required libraries
+
+```{r libraries}
+library(terra)
+library(ggplot2)
+library(reshape2)
+library(spdep)
+```
+
+# Load prediction rasters
+
+```{r load-rasters}
+richness_scale1 <- rast("predictions_Q.tif")
+richness_scale2 <- rast("predictions_1m.tif")
+richness_scale3 <- rast("predictions_100m_mean.tif")
+richness_scale4 <- rast("predictions_100m_total.tif")
+
+crs(richness_scale1) <- "EPSG:28992"
+crs(richness_scale2) <- "EPSG:28992"
+crs(richness_scale3) <- "EPSG:28992"
+crs(richness_scale4) <- "EPSG:28992"
+
+print(ext(richness_scale1))
+print(ext(richness_scale2))
+print(ext(richness_scale3))
+print(ext(richness_scale4))
+```
+
+# Continue full reporting analysis
+
+```{r run-reporting-script}
+source(file.path("..", "analysis", "06. Analyze prediction maps", "Analyse Prediction Patterns.R"))
+```
