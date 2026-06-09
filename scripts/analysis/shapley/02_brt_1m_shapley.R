@@ -136,12 +136,12 @@ print(var_expl_tbl)
 
 
 #total variance explained
-total_perc_expl <- sum(contrib_tbl$perc_explained)
+total_perc_expl <- sum(var_expl_tbl$perc_explained)
 cat("\nTotal percentage of variance explained by all variables:", round(total_perc_expl, 2), "%\n")
 #bar plot of percentage contribution
 
 library(ggplot2)
-ggplot(contrib_tbl, aes(x = reorder(variable, -perc_explained), y = perc_explained)) +
+ggplot(var_expl_tbl, aes(x = reorder(variable, -perc_explained), y = perc_explained)) +
   geom_bar(stat = "identity", fill = "steelblue") +
   labs(title = "Percentage Contribution of Each Variable to Variance Explained",
        x = "Variable",
@@ -161,7 +161,7 @@ colnames(boot_frac) <- colnames(shap_mat)
 
 for (b in seq_len(B)) {
   idx   <- sample.int(n_test, n_test, replace = TRUE)
-  y_b   <- y_test[idx]
+  y_b   <- test_df$alpha_diversity[idx]
   shap_b <- shap_mat[idx, , drop = FALSE]
   
   var_y_b    <- var(y_b, na.rm = TRUE)
@@ -203,4 +203,3 @@ residuals_df <- data.frame(residuals = residuals,
                            Latitude_GIS = test_set$Latitude_GIS,
                            Longitude_GIS = test_set$Longitude_GIS)
 write.csv(residuals_df, "1m_residuals_with_coordinates.csv", row.names = FALSE)
-

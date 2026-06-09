@@ -16,7 +16,7 @@ lat_col <- "Latitude_GIS"                          # Latitude column
 map_dir <- "..."                                   # Local directory with raster files
 
 # 1. Read plot locations (as sf object)
-plots_df <- read(csv_file)
+plots_df <- read.csv(csv_file)
 plots_sf <- st_as_sf(plots_df, coords = c("Longitude_GIS", "Latitude_GIS"), crs = 4326)
 
 plots_sf <- st_transform(plots_sf, st_crs(28992))  # Transform to match raster CRS if needed
@@ -51,7 +51,7 @@ landcover_vals <- st_join(plots_sf_lc, landcover_sf)$category
 
 # inspect values
 head(soilcode_vals)
-head(andcover_vals)
+head(landcover_vals)
 
 # ========== 5. Combine all extracted variables into a data frame ==========
 env_data <- data.frame(

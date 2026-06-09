@@ -205,13 +205,13 @@ abline(0, 1, col = "red")  # 1:1 line
 
 
 # CV statistics:
-alpha_div.tc2.lr01[34]
+alpha_div.tc5.lr05[34]
 
 cat("\nCross-validated performance (on training set):\n")
-cat("  CV R²   =", round(alpha_div.tc2.lr01$cv.statistics$correlation.mean^2, 3), "\n")
-cat("  CV RMSE =", round(alpha_div.tc2.lr01$cv.statistics$deviance.mean^0.5, 3), "\n")
-cat("  CV Deviance =", round(alpha_div.tc2.lr01$cv.statistics$deviance.mean, 3), "\n")
-cat("  CV Correlation =", round(alpha_div.tc2.lr01$cv.statistics$correlation.mean, 3), "\n")
+cat("  CV R²   =", round(alpha_div.tc5.lr05$cv.statistics$correlation.mean^2, 3), "\n")
+cat("  CV RMSE =", round(alpha_div.tc5.lr05$cv.statistics$deviance.mean^0.5, 3), "\n")
+cat("  CV Deviance =", round(alpha_div.tc5.lr05$cv.statistics$deviance.mean, 3), "\n")
+cat("  CV Correlation =", round(alpha_div.tc5.lr05$cv.statistics$correlation.mean, 3), "\n")
 
 #save model to file
 #saveRDS(alpha_div.tc5.lr05, file = "BRT_Q.rds")

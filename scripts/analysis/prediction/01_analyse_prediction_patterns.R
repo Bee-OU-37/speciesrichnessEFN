@@ -132,7 +132,7 @@ raster_df <- as.data.frame(diff_scale1, xy = TRUE, na.rm = TRUE)
 # Check the structure of the resulting data frame
 head(raster_df) # Should contain columns: x, y, layer (value)
 #rename column "1m" to "layer"
-raster_df <- dplyr::rename(raster_df, layer = names(diff_scale)[1])
+raster_df <- dplyr::rename(raster_df, layer = names(diff_scale1)[1])
 
 # Plot using ggplot2
 ggplot(raster_df, aes(x = x, y = y, fill = layer)) +
@@ -194,7 +194,6 @@ posthoc_result <- TukeyHSD(anova_result)
 print(posthoc_result)
 
 plot(posthoc_result)
-
 
 
 
