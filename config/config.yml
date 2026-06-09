@@ -1,0 +1,45 @@
+paths:
+  raw_data_root: data/raw
+  efn_vegetation: data/raw/EFN vegetation survey data
+  predictor_maps: data/raw/Predictor maps
+  prediction_maps: data/prediction-maps
+  processed_data: data/processed-data
+  model_input_data: data/processed-data/model input data
+  analysis_output: analysis-output
+  reports: reports
+  output_subfolders:
+    ml_models: analysis-output/ml-models
+    shapviz: analysis-output/shapviz
+    prediction_maps: analysis-output/prediction-maps
+    residuals: analysis-output/residuals
+    figures: analysis-output/figures
+regions:
+  - Austerlitz
+  - Fochteloerveen
+  - Rusthoeve
+  - Sluiskil
+  - USP BLUE
+  - USP DARK RED
+  - USP GREEN
+  - USP PURPLE
+  - USP YELLOW
+reporting:
+  report_template: reports/speciesrichness_workflow_report.Rmd
+  report_output_format: html_document
+  prediction_map_filenames:
+    Q: predictions_Q.tif
+    "1m": predictions_1m.tif
+    "100m_mean": predictions_100m_mean.tif
+    "100m_total": predictions_100m_total.tif
+  target_crs: EPSG:28992
+pipeline_steps:
+  - scripts/00_install_packages.R
+  - scripts/01_prepare_EFN_data.R
+  - scripts/02_calculate_species_richness.R
+  - scripts/03_extract_environmental_variables.R
+  - scripts/04_investigate_data.R
+  - scripts/05_variable_preselection_vif.R
+  - scripts/06_train_models.R
+  - scripts/07_shapley_analysis.R
+  - scripts/08_prediction_map_analysis.R
+  - scripts/09_render_report.R

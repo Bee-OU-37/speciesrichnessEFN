@@ -24,7 +24,8 @@ required_packages <- c(
   "terra",
   "tibble",
   "tidyr",
-  "writexl"
+  "writexl",
+  "yaml"
 )
 
 installed <- rownames(installed.packages())

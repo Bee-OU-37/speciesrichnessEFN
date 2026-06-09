@@ -1,91 +1,52 @@
 # speciesrichnessEFN
 
-Reproducible species richness machine learning workflow for EFN vegetation data using the existing project algorithms, libraries, and analysis content.
+Reproducible species-richness workflow for EFN vegetation data.
 
-## What this refactor changes
-
-- Keeps current modelling content (VIF/GVIF selection, BRT model training, SHAP analysis, prediction-map analysis).
-- Introduces a reproducible script pipeline from `scripts/00_install_packages.R` through report rendering.
-- Adds centralized configuration (`config/project_config.R`) and shared helpers (`R/helpers.R`).
-- Adds a report file in R Markdown (`reports/speciesrichness_workflow_report.Rmd`).
-- Replaces `README.txt` with this `README.md`.
-- Standardizes raw-input directory names:
-  - `data/raw/EFN vegetation survey data`
-  - `data/raw/Predictor maps`
-- Adds dedicated prediction-map input directory:
-  - `data/prediction-maps`
-
-## Repository architecture
+## Architecture
 
 ```text
 speciesrichnessEFN/
 ├── config/
-│   └── project_config.R
-├── R/
-│   └── helpers.R
+│   └── config.yml
 ├── scripts/
+│   ├── helpers.R
+│   ├── _init.R
 │   ├── 00_install_packages.R
 │   ├── 01_prepare_EFN_data.R
 │   ├── 02_calculate_species_richness.R
 │   ├── 03_extract_environmental_variables.R
 │   ├── 04_investigate_data.R
 │   ├── 05_variable_preselection_vif.R
-│   ├── 06_train_models_and_shap.R
-│   ├── 07_prediction_map_analysis.R
-│   ├── 08_render_report.R
-│   └── 09_run_all.R
-├── analysis/                        # Original analysis scripts (kept)
+│   ├── 06_train_models.R
+│   ├── 07_shapley_analysis.R
+│   ├── 08_prediction_map_analysis.R
+│   ├── 09_render_report.R
+│   └── analysis/  # analysis code now consolidated under scripts/
+├── run_all.R
 ├── data/
-│   ├── raw/                         # Raw EFN survey + predictor maps (gitignored)
+│   ├── raw/
 │   ├── processed-data/
-│   └── prediction-maps/             # Raster maps for model-based predictions
-├── reports/
-│   └── speciesrichness_workflow_report.Rmd
-└── analysis-output/
+│   └── prediction-maps/
+├── analysis-output/
+│   ├── ml-models/
+│   ├── shapviz/
+│   ├── prediction-maps/
+│   ├── residuals/
+│   └── figures/
+└── reports/
 ```
 
-## Visual workflow overview
+## How it works
 
-```text
-00_install_packages
-        ↓
-01_prepare_EFN_data
-        ↓
-02_calculate_species_richness
-        ↓
-03_extract_environmental_variables
-        ↓
-04_investigate_data
-        ↓
-05_variable_preselection_vif
-        ↓
-06_train_models_and_shap
-        ↓
-07_prediction_map_analysis
-        ↓
-08_render_report
-```
+1. `run_all.R` executes each pipeline script in order.
+2. `scripts/_init.R` loads shared helpers from `scripts/helpers.R`.
+3. `config/config.yml` defines paths, regions, outputs, and reporting settings.
+4. Stage scripts in `scripts/` orchestrate the concrete analysis scripts in `scripts/analysis/`.
+5. Machine-learning (`scripts/06_train_models.R`) and Shapley (`scripts/07_shapley_analysis.R`) run as separate stages.
+6. Outputs are organized under dedicated folders in `analysis-output/`.
 
-## How to run
-
-### Full end-to-end run
+## Run
 
 ```r
-source("scripts/09_run_all.R")
+source("run_all.R")
 ```
-
-### Stepwise run
-
-Run scripts in numeric order from `scripts/00_install_packages.R` to `scripts/08_render_report.R`.
-
-## Data conventions
-
-- Put EFN vegetation source files in `data/raw/EFN vegetation survey data/`.
-- Put predictor raster/vector map inputs in `data/raw/Predictor maps/`.
-- Put maps used for prediction execution in `data/prediction-maps/`.
-- Processed intermediate files stay under `data/processed-data/`.
-
-## Notes
-
-- Legacy analysis files are intentionally retained and orchestrated through wrapper scripts to preserve current scientific behaviour.
-- Some legacy scripts use relative paths and/or manual settings; wrappers run scripts in their original directories to keep compatibility.

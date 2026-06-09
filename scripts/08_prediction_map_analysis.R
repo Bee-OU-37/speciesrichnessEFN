@@ -4,9 +4,6 @@ source(init_path)
 project_root <- find_project_root()
 
 run_script_sequence(
-  c(
-    "scripts/analysis/investigation/01_investigate_data.R",
-    "scripts/analysis/investigation/02_investigate_data_100m.R"
-  ),
+  c("scripts/analysis/prediction/01_analyse_prediction_patterns.R"),
   project_root = project_root
 )
