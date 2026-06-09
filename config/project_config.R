@@ -13,6 +13,17 @@ get_project_config <- function(project_root) {
       analysis_output = file.path(project_root, "analysis-output"),
       reports = file.path(project_root, "reports")
     ),
+    reporting = list(
+      report_template = file.path(project_root, "reports", "speciesrichness_workflow_report.Rmd"),
+      report_output_format = "html_document",
+      prediction_map_filenames = c(
+        Q = "predictions_Q.tif",
+        `1m` = "predictions_1m.tif",
+        `100m_mean` = "predictions_100m_mean.tif",
+        `100m_total` = "predictions_100m_total.tif"
+      ),
+      target_crs = "EPSG:28992"
+    ),
     pipeline_steps = c(
       "scripts/00_install_packages.R",
       "scripts/01_prepare_EFN_data.R",

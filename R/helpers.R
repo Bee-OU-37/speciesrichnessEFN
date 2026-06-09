@@ -51,7 +51,7 @@ source_with_working_dir <- function(script_path, project_root = find_project_roo
   on.exit(setwd(old_wd), add = TRUE)
 
   setwd(dirname(absolute_script))
-  source(absolute_script, local = new.env(parent = .GlobalEnv))
+  source(absolute_script, local = new.env(parent = baseenv()))
   invisible(TRUE)
 }
 

@@ -27,15 +27,18 @@ library(spdep)
 # Load prediction rasters
 
 ```{r load-rasters}
-richness_scale1 <- rast(file.path(config$paths$prediction_maps, "predictions_Q.tif"))
-richness_scale2 <- rast(file.path(config$paths$prediction_maps, "predictions_1m.tif"))
-richness_scale3 <- rast(file.path(config$paths$prediction_maps, "predictions_100m_mean.tif"))
-richness_scale4 <- rast(file.path(config$paths$prediction_maps, "predictions_100m_total.tif"))
+prediction_filenames <- config$reporting$prediction_map_filenames
+dutch_crs <- config$reporting$target_crs
 
-crs(richness_scale1) <- "EPSG:28992"
-crs(richness_scale2) <- "EPSG:28992"
-crs(richness_scale3) <- "EPSG:28992"
-crs(richness_scale4) <- "EPSG:28992"
+richness_scale1 <- rast(file.path(config$paths$prediction_maps, prediction_filenames[["Q"]]))
+richness_scale2 <- rast(file.path(config$paths$prediction_maps, prediction_filenames[["1m"]]))
+richness_scale3 <- rast(file.path(config$paths$prediction_maps, prediction_filenames[["100m_mean"]]))
+richness_scale4 <- rast(file.path(config$paths$prediction_maps, prediction_filenames[["100m_total"]]))
+
+crs(richness_scale1) <- dutch_crs
+crs(richness_scale2) <- dutch_crs
+crs(richness_scale3) <- dutch_crs
+crs(richness_scale4) <- dutch_crs
 
 print(ext(richness_scale1))
 print(ext(richness_scale2))

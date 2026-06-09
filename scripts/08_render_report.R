@@ -1,15 +1,15 @@
 # Render the final project report from R Markdown.
 # The report consolidates workflow outputs into a reproducible document.
 
-helpers_path <- if (file.exists("R/helpers.R")) "R/helpers.R" else "../R/helpers.R"
-source(helpers_path)
+init_path <- if (file.exists("scripts/_init.R")) "scripts/_init.R" else "_init.R"
+source(init_path)
 
 project_root <- find_project_root()
 config <- load_project_config(project_root)
 
 rmarkdown::render(
-  input = file.path(config$paths$reports, "speciesrichness_workflow_report.Rmd"),
-  output_format = "html_document",
+  input = config$reporting$report_template,
+  output_format = config$reporting$report_output_format,
   output_dir = config$paths$reports,
   clean = TRUE,
   envir = new.env(parent = globalenv())

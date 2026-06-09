@@ -1,8 +1,8 @@
 # Run environmental predictor extraction and harmonization scripts.
 # Scripts are kept as-is and only orchestrated for reproducibility.
 
-helpers_path <- if (file.exists("R/helpers.R")) "R/helpers.R" else "../R/helpers.R"
-source(helpers_path)
+init_path <- if (file.exists("scripts/_init.R")) "scripts/_init.R" else "_init.R"
+source(init_path)
 
 project_root <- find_project_root()
 

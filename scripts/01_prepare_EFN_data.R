@@ -1,8 +1,8 @@
 # Prepare canonical project directories and validate expected raw-data layout.
 # This script does not alter scientific content; it standardizes folder structure.
 
-helpers_path <- if (file.exists("R/helpers.R")) "R/helpers.R" else "../R/helpers.R"
-source(helpers_path)
+init_path <- if (file.exists("scripts/_init.R")) "scripts/_init.R" else "_init.R"
+source(init_path)
 
 project_root <- find_project_root()
 config <- load_project_config(project_root)

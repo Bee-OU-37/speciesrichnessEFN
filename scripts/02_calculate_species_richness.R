@@ -1,8 +1,8 @@
 # Run species richness derivation scripts.
 # Legacy scripts are executed in-place to keep existing algorithms unchanged.
 
-helpers_path <- if (file.exists("R/helpers.R")) "R/helpers.R" else "../R/helpers.R"
-source(helpers_path)
+init_path <- if (file.exists("scripts/_init.R")) "scripts/_init.R" else "_init.R"
+source(init_path)
 
 project_root <- find_project_root()
 
