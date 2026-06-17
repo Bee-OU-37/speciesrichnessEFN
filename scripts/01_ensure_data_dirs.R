@@ -1,5 +1,4 @@
 # Prepare canonical project directories and validate expected raw-data layout.
-# This script does not alter scientific content; it standardizes folder structure.
 
 init_path <- if (file.exists("scripts/_init.R")) "scripts/_init.R" else "_init.R"
 source(init_path)

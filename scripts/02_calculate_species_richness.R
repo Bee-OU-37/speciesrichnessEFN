@@ -1,19 +1,43 @@
-# Run species richness derivation scripts.
-# Legacy scripts are executed in-place to keep existing algorithms unchanged.
+# Calculate species richness for all active EcoFracNet locations
 
 init_path <- if (file.exists("scripts/_init.R")) "scripts/_init.R" else "_init.R"
 source(init_path)
 
 project_root <- find_project_root()
 
-run_script_sequence(
-  c(
-    "analysis/01. Calculate species richness/species_richness_austerlitz.r",
-    "analysis/01. Calculate species richness/species_richness_fochteloerveen.r",
-    "analysis/01. Calculate species richness/species_richness_rusthoeve.r",
-    "analysis/01. Calculate species richness/species_richness_sluiskil.r",
-    "analysis/01. Calculate species richness/species_richness_USP.r",
-    "analysis/01. Calculate species richness/AverageAndTotal100mAlphaDiv.R"
-  ),
-  project_root = project_root
-)
+# config contains the names of the required EFN locations and the details of the input files for each location
+source("config/config.R")
+
+# Source the function file
+source("analysis/calculate_species_richness.R")
+
+# Initialize a list to store results for all locations
+results_all <- list()
+
+# Loop through each active location and process the data
+for (loc in active_locations) {
+  tryCatch({
+    # Call the function in calculate_species_richness.R to process the data of the EFN location and 
+    # calculate species richness, passing the config details dynamically
+    results <- species_richness_Q_1m(
+      location_id = loc,
+      config_list = location_config,
+      base_input_dir = base_input_dir,
+      base_output_dir = base_output_dir
+    )
+    
+    # Store the results in a list for potential further use
+    results_all[[loc]] <- results
+    cat("  -> SUCCESS\n\n")
+    
+  }, error = function(e) {
+    warning("Failed processing ", loc, ": ", e$message)
+  })
+}
+
+# Calculate the 100m scale species richness values from the 1m scale results, 
+# using the function defined in calculate_species_richness.R.
+species_richness_100m(input_dir = base_out_dir)
+
+cat("\n=== All species richness calculations complete ===\n")
+  

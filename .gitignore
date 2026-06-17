@@ -3,10 +3,8 @@
 .RData
 .Ruserdata
 
-# Raw and external data inputs (do not version control)
-data/raw/
-data/raw-data/
-data/prediction-maps/
+# Raw data and processed data
+data/
 
 # Common generated outputs
 analysis-output/

@@ -34,7 +34,7 @@ ensure_dir <- function(path) {
 
 # Load and return centralized project configuration.
 load_project_config <- function(project_root = find_project_root()) {
-  source(file.path(project_root, "config", "project_config.R"), local = TRUE)
+  source(file.path(project_root, "config", "config.R"), local = TRUE)
   get_project_config(project_root)
 }
 
