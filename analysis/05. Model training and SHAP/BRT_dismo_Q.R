@@ -214,7 +214,7 @@ cat("  CV Deviance =", round(alpha_div.tc2.lr01$cv.statistics$deviance.mean, 3),
 cat("  CV Correlation =", round(alpha_div.tc2.lr01$cv.statistics$correlation.mean, 3), "\n")
 
 #save model to file
-#saveRDS(alpha_div.tc5.lr05, file = "BRT_Q.rds")
+#saveRDS(alpha_div.tc5.lr05, file = "BRT_Q_model.rds")
 
 # -------------------------------------------------
 #  SHAP values

@@ -35,9 +35,14 @@ for (loc in active_locations) {
   })
 }
 
-# Calculate the 100m scale species richness values from the 1m scale results, 
-# using the function defined in calculate_species_richness.R.
-species_richness_100m(input_dir = base_out_dir)
+# Calculate the 100m scale species richness values
+tryCatch({
+  # Call the function to calculate species richness at 100m scale
+  species_richness_100m(input_dir = base_output_dir, base_output_dir)
+  
+}, error = function(e) {
+  warning("Failed calculating 100m scale species richness: ", e$message)
+})
 
 cat("\n=== All species richness calculations complete ===\n")
   

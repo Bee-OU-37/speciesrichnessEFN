@@ -16,18 +16,22 @@ speciesrichnessEFN/
 │   ├── 04_investigate_data.R
 │   ├── 05_variable_preselection_vif.R
 │   ├── 06_train_models_and_shap.R
-│   ├── 07_prediction_map_analysis.R
-│   ├── 08_render_report.R
-│   └── 09_run_all.R
+│   ├── 07_predict_species_richness_with_models.R
+│   ├── 08_prediction_map_analysis.R
+│   ├── 09_render_report.R
+│   └── 10_run_all.R
 │   └── helpers.R                    # Helper functions used across multiple scripts
 ├── analysis/                        # Original analysis scripts (kept)
 ├── data/
 │   ├── raw/                         # Raw EFN survey + predictor maps (gitignored)
-│   ├── processed-data/
-│   └── prediction-maps/             # Raster maps for model-based predictions
+│   ├── processed-data/              # intermediate processed data (gitignored)
+│   └── prediction-maps/             # input maps for model-based predictions (gitignored)
 ├── reports/
 │   └── speciesrichness_workflow_report.Rmd
-└── analysis-output/
+└── output/
+│   ├── models/                      # ML models and SHAP results (gitignored)
+│   └── maps/                        # maps containing predicted species richness (ML model outputs)
+
 ```
 
 ## Visual workflow overview
@@ -69,7 +73,7 @@ Run scripts in numeric order from `scripts/00_install_packages.R` to `scripts/08
 - Put EFN vegetation data source files in `data/raw-data/EFN-survey-data/`.
 - Make sure the EFN vegetation data source files are .xlsx files and define the expected sheet and column names in the config file
 - Put predictor raster/vector map inputs in `data/raw-data/predictor-maps/`.
-- Put maps used for prediction execution in `data/prediction-maps/`.
+- Put maps used as input for species richness prediction based on the ML models in `data/prediction-maps/`.
 - Processed intermediate files stay under `data/processed-data/`.
 
 ## Notes

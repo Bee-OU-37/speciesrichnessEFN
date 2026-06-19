@@ -95,22 +95,27 @@ species_richness_100m <- function(input_dir, base_output_dir) {
   # * If a plot or triangle has no species, its species richness is set to 0
   # * Output is one row per triangle per file, with mean plot species richness, total species richness, number of plots, GPS coordinates.
   
-  comb_file_dir <- "." #current directory
-  comb_file <- file.path(comb_file_dir, "small scale plot combinations.xlsx")
+  
+  # locate the plot combination file in the config directory
+  comb_file_dir <- file.path(find_project_root(), "config")
+  comb_file <- file.path(comb_file_dir, "small scale plot combinations.csv")
   # Read plot combinations file
-  plot_combinations <- read_excel(comb_file)
+  plot_combinations <- read.csv(comb_file)
   
   # List all .xlsx files in the data directory
   xlsx_files <- list.files(input_dir, pattern = "\\.xlsx$", full.names = TRUE)
   
+  print(paste("Found", length(xlsx_files), "xlsx files in", input_dir))
+
   results <- list()
   
   for (f in xlsx_files) {
+    print(f)
     sheet_names <- excel_sheets(f)
     if (!("Species_count_Plotcode" %in% sheet_names && "Species" %in% sheet_names)) next
     
-    # Remove " species.xlsx" from filename
-    location_name <- sub(" species\\.xlsx$", "", basename(f))
+    # Remove " species richness.xlsx" from filename
+    location_name <- sub(" species richness\\.xlsx$", "", basename(f))
     
     # Read plotcode-level species count and coordinates
     plotcode_df <- read_excel(f, sheet = "Species_count_Plotcode")
@@ -170,6 +175,6 @@ species_richness_100m <- function(input_dir, base_output_dir) {
   }
   
   final_summary <- bind_rows(results)
-  write_xlsx(final_summary, "mean_and_total_alpha_diversity_100m.xlsx")
+  write_xlsx(final_summary, path = base_output_dir, "mean_and_total_alpha_diversity_100m.xlsx")
   
 }

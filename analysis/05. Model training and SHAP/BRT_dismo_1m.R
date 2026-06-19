@@ -179,7 +179,7 @@ plot(test_set$alpha_diversity, pred_test,
 abline(0, 1, col = "red")  # 1:1 line
 
 #save model to file
-#saveRDS(alpha_div.tc2.lr01, file = "BRT_1m.rds")
+#saveRDS(alpha_div.tc2.lr01, file = "BRT_1m_model.rds")
 
 # CV statistics:
 alpha_div.tc2.lr01[34]

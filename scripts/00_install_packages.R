@@ -14,6 +14,7 @@ required_packages <- c(
   "kernelshap",
   "moments",
   "patchwork",
+  "raster",
   "readr",
   "readxl",
   "reshape2",
@@ -25,7 +26,7 @@ required_packages <- c(
   "tibble",
   "tidyr",
   "writexl"
-)
+  )
 
 installed <- rownames(installed.packages())
 missing <- setdiff(required_packages, installed)
@@ -33,5 +34,8 @@ missing <- setdiff(required_packages, installed)
 if (length(missing) > 0) {
   install.packages(missing)
 }
+
+# Load all required packages
+lapply(required_packages, library, character.only = TRUE)
 
 message("Package check complete.")

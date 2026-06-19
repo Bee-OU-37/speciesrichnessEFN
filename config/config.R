@@ -10,7 +10,9 @@ get_project_config <- function(project_root) {
       predictor_maps = file.path(project_root, "data", "raw-data", "predictor-maps"),
       prediction_maps = file.path(project_root, "data", "prediction-maps"),
       processed_data = file.path(project_root, "data", "processed-data"),
-      analysis_output = file.path(project_root, "analysis-output"),
+      output = file.path(project_root, "output"),
+      models_dir = file.path(project_root, "output", "models"),
+      output_maps = file.path(project_root, "output", "maps"),
       reports = file.path(project_root, "reports")
     ),
     
@@ -28,6 +30,12 @@ get_project_config <- function(project_root) {
   )
 }
     
+# Base paths
+base_input_dir <- "data/raw-data/EFN-survey-data"
+base_output_dir <- "data/processed-data"
+
+
+
 # --- Which EcoFracNet locations to process? ---
 # Change this vector to run specific subsets or all
 active_locations <- c(
@@ -148,7 +156,5 @@ location_config <- list(
   )
 )
 
-# Base paths
-base_input_dir <- "data/raw-data/EFN-survey-data"
-base_output_dir <- "data/processed-data"
+
   

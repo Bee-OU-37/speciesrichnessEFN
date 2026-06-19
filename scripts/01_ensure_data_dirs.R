@@ -12,7 +12,9 @@ ensure_dir(config$paths$efn_vegetation)
 ensure_dir(config$paths$predictor_maps)
 ensure_dir(config$paths$prediction_maps)
 ensure_dir(config$paths$processed_data)
-ensure_dir(config$paths$analysis_output)
+ensure_dir(config$paths$output)
+ensure_dir(config$paths$models_dir)
+ensure_dir(config$paths$output_maps)
 ensure_dir(config$paths$reports)
 
 # Inform users about expected raw inputs if folders are empty.
