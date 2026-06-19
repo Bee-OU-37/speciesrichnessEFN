@@ -62,14 +62,11 @@ landcover_sf <- st_read(lc_file)
 soilcode_sf <- st_read(sc_file)
 
 # Make sure vectors have desired factor levels, read them from the models dir
-
-
-desired_lc_levels <- readRDS("BRT_dismo_Q_levels_lc.rds")
-desired_soil_levels <- readRDS("BRT_dismo_Q_levels_soil.rds")
+desired_lc_levels <- readRDS(file.path(models_dir, "BRT_Q_levels_lc.rds"))
+desired_soil_levels <- readRDS(file.path(models_dir, "BRT_Q_levels_soil.rds"))
 landcover_sf$category <- factor(landcover_sf$category, levels = desired_lc_levels)
 soilcode_sf$soilcode <- factor(soilcode_sf$soilcode, levels = desired_soil_levels)
 
-# 
 # remove NAs, as they cause issues during rasterization, and this also establishes a correct AOA
 landcover_sf <- landcover_sf[!is.na(landcover_sf$category), ]
 soilcode_sf <- soilcode_sf[!is.na(soilcode_sf$soilcode), ]
@@ -104,8 +101,7 @@ landcover_raster <- terra::rasterize(
 print(names(landcover_raster))
 plot(landcover_raster, main = "Landcover Raster")  # Plot the landcover raster
 # save to file
-#writeRaster(landcover_raster, "landcover_raster_Q_Prediction.tif", overwrite = TRUE)
-
+#writeRaster(landcover_raster, file.path(output, "landcover_raster_Q_Prediction.tif"), overwrite = TRUE)
 
 soilcode_raster <- terra::rasterize(
   soilcode_sf, 
@@ -117,7 +113,7 @@ soilcode_raster <- terra::rasterize(
 plot(soilcode_raster, main = "Soilcode Raster")    # Plot the soilcode raster
 
 # save to file
-#writeRaster(soilcode_raster, "soilcode_raster_Q_Prediction.tif", overwrite = TRUE)
+#writeRaster(soilcode_raster, file.path(output, "soilcode_raster_Q_Prediction.tif"), overwrite = TRUE)
 
 # Check their alignment with rasters
 if (!compareRaster(landcover_raster, stacked_rasters[[1]], extent = TRUE, crs = TRUE, res = TRUE)) {
@@ -138,15 +134,13 @@ final_df <- na.omit(final_df)
 # -------------------------------------------------------------
 
 # Load trained gbm model
-#gbm_Q_model <- readRDS("BRT_Q.rds")
-gbm_Q_model <- readRDS(file.path("models_dir", "BRT_Q_model.rds"))
-
+gbm_Q_model <- readRDS(file.path(models_dir, "BRT_Q_model.rds"))
 
 # Predict with the GBM model
 final_df$prediction <- predict(
   gbm_Q_model, 
   newdata = final_df[, -c(1, 2)],
-  n.trees = gbm_model$n.trees,
+  n.trees = gbm_Q_model$n.trees,
   type = "response"
 )
 
@@ -155,26 +149,24 @@ prediction_raster <- rasterFromXYZ(final_df[, c("x", "y", "prediction")])
 plot(prediction_raster)
 
 # write to output folder "output/predictions/predictions_Q.tif"
-writeRaster(prediction_raster, file.path("output_maps", "predictions_Q.tif", overwrite = TRUE))
+writeRaster(prediction_raster, file.path(output_maps, "predictions_Q.tif"), overwrite = TRUE)
 
 # -------------------------------------------------------------
 # Predict with GBM 1m2 model
 # -------------------------------------------------------------
 
 # Load trained gbm model
-gbm_1m_model <- readRDS(file.path("models_dir", "BRT_1m_model.rds"))
+gbm_1m_model <- readRDS(file.path(models_dir, "BRT_1m_model.rds"))
 
 # Predict with the GBM model
 final_df$prediction <- predict(
   gbm_1m_model, 
   newdata = final_df[, -c(1, 2)],
-  n.trees = gbm_model$n.trees,
+  n.trees = gbm_1m_model$n.trees,
   type = "response"
 )
 
 # Convert predictions to raster
 prediction_raster <- rasterFromXYZ(final_df[, c("x", "y", "prediction")])
 plot(prediction_raster)
-writeRaster(prediction_raster, "predictions_USP_1m.tif", overwrite = TRUE)
-
-
+writeRaster(prediction_raster, file.path(output_maps, "predictions_1m.tif"), overwrite = TRUE)
