@@ -14,6 +14,7 @@ required_packages <- c(
   "kernelshap",
   "moments",
   "patchwork",
+  "purrr",
   "raster",
   "readr",
   "readxl",
@@ -25,6 +26,7 @@ required_packages <- c(
   "terra",
   "tibble",
   "tidyr",
+  "viridisLite",
   "writexl"
   )
 

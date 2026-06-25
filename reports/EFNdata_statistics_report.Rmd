@@ -1,29 +1,77 @@
-# Run exploratory statistical checks on prepared model-input datasets.
-# This preserves current investigation scripts and plotting behaviour.
+---
+title: 'Ecological Fractal Net data - species richness statistics'
+output:
+  word_document: default
+header-includes: \usepackage[singlelinecheck=false]{caption}
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r setup}
+library(dplyr)
+library(moments)
+library(readxl)
 
 # Load helpers and configuration
-init_path <- if (file.exists("scripts/_init.R")) "scripts/_init.R" else "_init.R"
-source(init_path)
+source(file.path("..", "scripts", "helpers.R"))
 
 project_root <- find_project_root()
 
 # config contains the names of the required EFN locations and the details of the input files for each location
-source("config/config.R")
+config <- load_project_config(project_root)
 
+```
+
+**Author:** Johanneke Siljee (UU, NL)
+
+**Report** unpublished, exploratory analysis, not peer-reviewed, for internal use only.
+
+## Purpose
+
+This report explores the Ecological Fractal Net (EFN) data, focusing on species richness statistics .
+
+# EFN species richness statistics
+
+```{r load-EFN-data}
 # -------------------------------------------------
 #  Load ecological data
 # -------------------------------------------------
-base_dir <- file.path(base_output_dir, "combined_results")
 
-df <- read_xlsx(file.path(base_dir, "All_locations_1m_specrich.xlsx"))
-#df_raw <- read.csv("env_data_total_1m.csv")  
+# Get all xlsx files from the processed_data file path, and put them together in a dataframe, with the last column being the filename (without extension), and the first column the Plotcode from the sheet Species_count_Plotcode, and the second column the unique_Species_count from the same sheet.
 
+base_dir <- file.path(config$paths$processed_data, "combined_results")
+print("Base directory for processed data:")
+print(base_dir)
+
+# read the xlsx file with species richness data
+excel_file <- file.path(base_dir, "All_locations_1m_specrich.xlsx")
+df <- read_xlsx(excel_file)
+
+```
+
+## Histogram
+
+```{r histogram-plot}
 # -------------------------------------------------
 # Distribution of species richness with a histogram
 hist(df$unique_Species_count, main = "Histogram of species richness", xlab = "Species Richness", ylab = "Frequency", breaks = 20)
 
+```
+
+# Density
+
+```{r density-plot}
+
 # Distribution of species richness with a density plot
 plot(density(df$unique_Species_count, na.rm = TRUE), main = "Density Plot of Species Richness", xlab = "Species Richness", ylab = "Density")
+
+```
+
+# Summary statistics
+
+```{r summary-stats}
 
 # Summary statistics of species richness
 summary(df$unique_Species_count)
@@ -53,3 +101,4 @@ cat("Coefficient of variation of species richness:", cv_alpha, "\n")
 cat("Skewness of species richness:", skewness_alpha, "\n")  
 cat("Kurtosis of species richness:", kurtosis_alpha, "\n")
 
+```

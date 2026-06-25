@@ -1,0 +1,226 @@
+---
+title: 'Species Richness Predictions'
+output:
+  word_document: default
+header-includes: \usepackage[singlelinecheck=false]{caption}
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r setup}
+library(readr)
+library(dplyr)
+library(terra)
+library(viridisLite)
+library(ggplot2)
+library(reshape2)
+library(spdep)
+source(file.path("..", "scripts", "helpers.R"))
+project_root <- find_project_root()
+config <- load_project_config(project_root)
+```
+
+**Author:** Johanneke Siljee (UU, NL)
+
+**Report** unpublished, exploratory analysis, not peer-reviewed, for internal use only.
+
+## Purpose
+
+This report captures the analysis currently implemented for species-richness prediction maps across spatial scales.
+
+```{r load-rasters}
+# Load predicted rasters
+
+prediction_filenames <- config$reporting$prediction_map_filenames
+dutch_crs <- config$reporting$target_crs
+
+richness_scale1 <- rast(file.path(config$paths$output_maps, prediction_filenames[["Q"]]))
+richness_scale2 <- rast(file.path(config$paths$output_maps, prediction_filenames[["1m"]]))
+richness_scale3 <- rast(file.path(config$paths$output_maps, prediction_filenames[["100m_mean"]]))
+richness_scale4 <- rast(file.path(config$paths$output_maps, prediction_filenames[["100m_total"]]))
+
+crs(richness_scale1) <- dutch_crs
+crs(richness_scale2) <- dutch_crs
+crs(richness_scale3) <- dutch_crs
+crs(richness_scale4) <- dutch_crs
+
+# Align extents and resolutions if necessary
+richness_scale2 <- resample(richness_scale2, richness_scale1, method = "bilinear")
+richness_scale3 <- resample(richness_scale3, richness_scale1, method = "bilinear")
+richness_scale4 <- resample(richness_scale4, richness_scale1, method = "bilinear")
+
+# Load raster datasets representing species richness at different scales
+richness_stack <- c(richness_scale1, richness_scale2, richness_scale3, richness_scale4)
+names(richness_stack) <- c("0.25m","1m","100mean","100total")
+
+```
+
+# Predicted species richness plots
+
+
+```{r plot-predictions}  
+# Plot the predicted species richness maps for each scale
+
+# Get the absolute min and max across ALL layers at once
+# This calculates min(min(layer1), min(layer2), ...) etc.
+global_stats <- global(richness_stack, c("min", "max"), na.rm = TRUE)
+
+# Extract values
+zmin <- global_stats$min[1] # The very first column's min value
+zmax <- global_stats$max[1] # The very first column's max value
+
+# Check if they exist
+if (!is.na(zmin) && !is.na(zmax)) {
+  cols <- turbo(n = 100)
+  
+  plot(richness_stack, 
+       main = names(richness_stack), 
+       col = cols,
+       zlim = c(zmin, zmax))
+} else {
+  warning("Could not calculate range (all data might be NA)")
+}
+
+```
+
+# Prediction patterns analysis
+
+```{r Analyse prediction patterns}
+
+# Normalize the stacked raster to a 0-1 scale
+richness_norm <- (richness_stack - min(richness_stack)) / (max(richness_stack) - min(richness_stack))
+
+# ------------------------------------------------------------------
+# Histograms and Density Plots
+# ------------------------------------------------------------------
+# Examine the distribution of species richness values at each scale
+richness_df <- data.frame(
+  Scale1 = values(richness_stack[[1]]),
+  Scale2 = values(richness_stack[[2]]),
+  Scale3 = values(richness_stack[[3]]),
+  Scale4 = values(richness_stack[[4]])
+)
+
+richness_long <- melt(richness_df, variable.name = "Scale", value.name = "Richness")  # Reshape for ggplot
+
+ggplot(richness_long, aes(x = Richness, fill = Scale)) +
+  geom_density(alpha = 0.4) +
+  labs(title = "Density of Predictions Across Scales") +
+  theme_minimal()
+
+# To reduce overplotting, we can sample a subset of the data for visualization
+# Sample a subset of the data
+set.seed(123)  # For reproducibility
+subset_richness <- richness_long[sample(nrow(richness_long), size = 100000), ]
+
+# Re-plot with the subset
+ggplot(subset_richness, aes(x = Richness, fill = Scale)) +
+  geom_density(alpha = 0.4) +
+  labs(title = "Density of Predictions Across Scales, with subset sampling") +
+  theme_minimal()
+
+
+```
+
+# Hotspot analysis
+
+```{r hotspot-analysis}  
+# ------------------------------------------------------------------
+# Hotspot Analysis
+# ------------------------------------------------------------------
+# Identify areas of high or low richness (hotspots) at each scale and compare them:
+# Extract values from the first layer of the raster stack
+values_richness <- values(richness_stack[[1]])  # Extract raster values as a vector
+
+# Compute the 90th percentile (exclude NA values)
+q90 <- quantile(values_richness, 0.9, na.rm = TRUE)
+
+# Create a logical raster of hotspots (areas above the 90th percentile)
+hotspots <- richness_stack[[1]] > q90
+
+# Plot the hotspots
+plot(hotspots, col = c("lightgrey", "red"), legend = FALSE, main = "90th Percentile Hotspots")
+
+# Identify hotpots occuring both in smallest and largest scale
+hotspots_scale1 <- richness_stack[[1]] > quantile(values(richness_stack[[1]]), 0.9, na.rm = TRUE)
+hotspots_scale4 <- richness_stack[[4]] > quantile(values(richness_stack[[4]]), 0.9, na.rm = TRUE)
+common_hotspots <- hotspots_scale1 & hotspots_scale4
+
+# Plot common hotspots, use colouring normal for ecological hotspots.
+plot(common_hotspots, col = c("lightgrey", "red"), legend = FALSE, main = "Common hotspots in 0.25m² and 100m total scales")
+
+
+# calculate how much of the hotspots in hotspots_scale1 are also in common_hotspots
+hotspot_overlap <- sum(values(hotspots_scale1) & values(common_hotspots), na.rm = TRUE) /
+  sum(values(hotspots_scale1), na.rm = TRUE)
+# calculate how much of the hotspots in hotspots_scale4 are also in common_hotspots
+hotspot_overlap2 <- sum(values(hotspots_scale4) & values(common_hotspots), na.rm = TRUE) /
+  sum(values(hotspots_scale4), na.rm = TRUE)
+
+```
+
+Proportion of 0.25m² hotspots also in common hotspots: `r round(hotspot_overlap * 100, 2)`%
+
+Proportion of 100m total hotspots also in common hotspots: `r round(hotspot_overlap2 * 100, 2)`%
+
+
+# Spatial Cross-Scale Comparison
+## Differences Across Scales
+Compute the difference between richness predictions across scales (absolute or relative changes)
+
+``` {r scale_differences}
+diff_scale1 <- richness_stack[[2]] - richness_stack[[1]]
+
+# Convert the terra raster to a data frame
+raster_df <- as.data.frame(diff_scale1, xy = TRUE, na.rm = TRUE)
+
+#rename column "1m" to "layer"
+raster_df <- dplyr::rename(raster_df, layer = names(diff_scale1)[1])
+
+
+# Plot using ggplot2
+ggplot(raster_df, aes(x = x, y = y, fill = layer)) +
+  geom_raster() +  # Use raster tiles for the plot
+  scale_fill_gradient2(
+    low = "red",     # Color for negative values
+    mid = "white",   # Color for zero
+    high = "blue",   # Color for positive values
+    midpoint = 0,    # Set zero as the neutral midpoint
+    name = "Difference"  # Legend title
+  ) +
+  theme_minimal() +  # Use a clean theme
+  labs(
+    title = "Difference Between 1m² and 0.25m²",
+    x = "Longitude",
+    y = "Latitude"
+  )
+
+# Compute difference between 100m total and 0.25m2
+diff_scale2 <- richness_stack[[4]] - richness_stack[[1]]
+
+# Convert the terra raster to a data frame
+raster_df <- as.data.frame(diff_scale2, xy = TRUE, na.rm = TRUE)
+
+#rename column "1m" to "layer"
+raster_df <- dplyr::rename(raster_df, layer = names(diff_scale2)[1])
+
+# Plot using ggplot2
+ggplot(raster_df, aes(x = x, y = y, fill = layer)) +
+  geom_raster() +  # Use raster tiles for the plot
+  scale_fill_gradient2(
+    low = "red",     # Color for negative values
+    mid = "white",   # Color for zero
+    high = "blue",   # Color for positive values
+    midpoint = 0,    # Set zero as the neutral midpoint
+    name = "Difference"  # Legend title
+  ) +
+  theme_minimal() +  # Use a clean theme
+  labs(
+    title = "Difference Between 100m total and 0.25m2",
+    x = "Longitude",
+    y = "Latitude"
+  )
+```
+

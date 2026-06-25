@@ -14,12 +14,11 @@ source("scripts/03_extract_environmental_variables.R")
 source("scripts/04_investigate_data.R")
 source("scripts/05_variable_preselection_vif.R")
 source("scripts/06_train_models_and_shap.R")
-source("scripts/07_prediction_map_analysis.R")
-source("scripts/08_render_report.R")
+source("scripts/07_predict_species_richness_with_models.R")
 
-# rmarkdown::render(
-#   "analysis/delta_micro_vs_macro.Rmd",
-#   output_dir = "output"
-# )
+rmarkdown::render(
+ "reports/speciesrichness_prediction_report.Rmd",
+ output_dir = "reports"
+)
 
 log_step("Full pipeline finished.")

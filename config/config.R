@@ -17,13 +17,13 @@ get_project_config <- function(project_root) {
     ),
     
     reporting = list(
-      report_template = file.path(project_root, "reports", "speciesrichness_workflow_report.Rmd"),
-      report_output_format = "html_document",
+      report_template = file.path(project_root, "reports", "speciesrichness_prediction_report.Rmd"),
+      report_output_format = "word_document",
       prediction_map_filenames = c(
         Q = "predictions_Q.tif",
         `1m` = "predictions_1m.tif",
-        `100m_mean` = "predictions_100m_mean.tif",
-        `100m_total` = "predictions_100m_total.tif"
+        `100m_mean` = "predictions_100mean.tif",
+        `100m_total` = "predictions_100total.tif"
       ),
       target_crs = "EPSG:28992"
     )
@@ -33,7 +33,6 @@ get_project_config <- function(project_root) {
 # Base paths
 base_input_dir <- "data/raw-data/EFN-survey-data"
 base_output_dir <- "data/processed-data"
-
 
 
 # --- Which EcoFracNet locations to process? ---
@@ -51,7 +50,7 @@ active_locations <- c(
   "USP_PURPLE"
 )
 
-# --- 2. Configuration Details per Location ---
+# --- Configuration Details per Location ---
 # A named list where each name matches the location ID
 location_config <- list(
   
@@ -156,5 +155,33 @@ location_config <- list(
   )
 )
 
+# --- Old EFN to new plot codes ---
+# Define a mapping of old plot codes to new plot codes
+old_to_new_plotcodes <- list(
+  "1" = 311,
+  "2" = 222,
+  "3" = 233,
+  "4" = 322,
+  "6" = 323,
+  "7" = 332,
+  "8" = 321,
+  "9" = 312,
+  "10" = 313,
+  "11" = 331,
+  "12" = 3323,
+  "13" = 33323,
+  "14" = 3321,
+  "15" = 3312,
+  "16" = 3313,
+  "17" = 33331,
+  "18" = 3332,
+  "19" = 33332,
+  "20" = 33321,
+  "21" = 33312,
+  "22" = 3331,
+  "23" = 33313,
+  "24" = 211,
+  "25" = 333
+)
 
   

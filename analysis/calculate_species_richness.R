@@ -1,17 +1,65 @@
-# This file contains the functions to calculate species richness from the raw EFN vegetation survey datasets of location_name. 
-# It reads the raw data from the specified input Excel file, processes it to calculate species richness 
-# per quadrant and per plotcode, and then writes the results to a new Excel file with two sheets, given as output_file. 
+# This file contains the functions to calculate species richness from the raw EFN vegetation survey datasets of location_name.
+# It reads the raw data from the specified input Excel file, processes it to calculate species richness
+# per quadrant and per plotcode, and then writes the results to a new Excel file with two sheets, given as output_file.
 # The function also returns the processed dataframes for further use in the session.
 
-library(readxl)
-library(dplyr)
-library(writexl)
-library(tidyr)
+################################################################
+# Functions
+################################################################
 
-# function that calculates the species richness per quadrat and per 1m2 plot for a given location, 
-# based on the configuration details provided in the config_list.
-species_richness_Q_1m <- function(location_id, config_list, base_input_dir, base_output_dir) {
+# Function to clean trailing spaces and other clutter from Excel values on e.g. Lat long columns, and convert to numeric
+clean_excel_numeric <- function(x) {
+  x %>%
+    # Remove everything EXCEPT digits, dots, and minus signs
+    str_replace_all("[^0-9.-]", "") |> 
+    as.numeric()
+}
+
+# Function Rename old plotcodes
+rename_old_plotcodes <- function(df, plotcode_col = "Plotcode", mapping_list = old_to_new_plotcodes) {
   
+  # 1. Check if column exists
+  if (!plotcode_col %in% names(df)) {
+    stop("Column '", plotcode_col, "' not found.")
+  }
+  
+  # Extract mapping keys and values
+  # Ensure keys are characters to match against our temporarily-converted column
+  old_keys <- as.character(names(mapping_list)) 
+  new_vals <- unlist(mapping_list) 
+  
+  # 2. Convert target column to character for matching
+  current_vals <- as.character(df[[plotcode_col]])
+  
+  # 3. Find matches
+  match_pos <- match(current_vals, old_keys)
+  
+  # 4. Replace matched values; keep original if no match
+  # Note: new_vals[match_pos] returns the numeric values from your list
+  df[[plotcode_col]] <- ifelse(
+    is.na(match_pos), 
+    df[[plotcode_col]],              # Keep original (numeric)
+    as.numeric(new_vals[match_pos])  # New value (explicitly numeric)
+  )
+  
+  return(df)
+}
+
+remove_plotcodes <- function(df, plotcode_col = "Plotcode", plotcodes_to_remove) {
+  # This function removes rows from the dataframe where the plot code matches any in the provided list.
+  # It takes a dataframe, the name of the column containing plot codes, and a vector of plot codes to remove.
+  # It returns the filtered dataframe.
+  
+  df_filtered <- df[!df[[plotcode_col]] %in% plotcodes_to_remove, ]
+  return(df_filtered)
+}
+
+# function that calculates the species richness per quadrat and per 1m2 plot for a given location,
+# based on the configuration details provided in the config_list.
+species_richness_Q_1m <- function(location_id,
+                                  config_list,
+                                  base_input_dir,
+                                  base_output_dir) {
   # 1. Validate Location exists in config
   if (!location_id %in% names(config_list)) {
     stop("Location '", location_id, "' not found in configuration.")
@@ -32,7 +80,8 @@ species_richness_Q_1m <- function(location_id, config_list, base_input_dir, base
   
   # Ensure output directory exists
   output_dir <- dirname(output_path)
-  if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+  if (!dir.exists(output_dir))
+    dir.create(output_dir, recursive = TRUE)
   
   cat("Processing:", location_id, "\n")
   
@@ -42,14 +91,38 @@ species_richness_Q_1m <- function(location_id, config_list, base_input_dir, base
   # 4. Read Data using the DYNAMIC sheet names
   df1_full <- read_excel(normalizePath(input_path), sheet = sheets_to_use$metadata)
   df2_full <- read_excel(normalizePath(input_path), sheet = sheets_to_use$species)
+  
+  # Select only the necessary columns from each sheet
+  df1_selected <- df1_full %>%
+    select(Plotcode, `Quadrant code`, Latitude_GIS, Longitude_GIS)
+
+  # clean up trailing spaces from Latitude_GIS, also non-breaking space (Unicode U+00A0) or another invisible Unicode character at the end, which standard trimws() does not remove by default.
+  df1_selected$Latitude_GIS <- gsub("[^0-9.-]", "", df1_selected$Latitude_GIS)
+  df1_selected$Longitude_GIS <- gsub("[^0-9.-]", "", df1_selected$Longitude_GIS)
+  df1_selected$Latitude_GIS <- as.numeric(df1_selected$Latitude_GIS)
+  df1_selected$Longitude_GIS <- as.numeric(df1_selected$Longitude_GIS)
 
   # Select only the necessary columns from each sheet
-  # Renaming columns dynamically if case sensitivity varies, though assuming exact match here
-  df1_selected <- df1_full %>% 
-    select(Plotcode, `Quadrant code`, Latitude_GIS, Longitude_GIS)
-  
-  df2_selected <- df2_full %>% 
+  df2_selected <- df2_full %>%
     select(Plotcode, `Quadrant code`, Species)
+  
+  # fix the old plotcodes in Sluiskil location
+  if (location_id == "Sluiskil") {
+    cat("Fixing old plotcodes in Sluiskil location...\n")
+    
+    # use the old_to_new_plotcodes mapping to recode the Plotcode column in both dataframes. Change the Plotcodes where necessary, keep the rest as is.
+    df1_selected <- rename_old_plotcodes(df1_selected, "Plotcode", old_to_new_plotcodes)
+    df2_selected <- rename_old_plotcodes(df2_selected, "Plotcode", old_to_new_plotcodes)
+  }
+
+      # remove plotcodes 40-45 from Rusthoeve location
+  if (location_id == "Rusthoeve") {
+    cat("Removing plotcodes 40-45 from Rusthoeve location...\n")
+    plotcode_list <- as.character(40:45)
+
+    df1_selected <- remove_plotcodes(df1_selected, "Plotcode", plotcode_list)
+    df2_selected <- remove_plotcodes(df2_selected, "Plotcode", plotcode_list)
+  }
   
   # --- FIRST SHEET: For a count of species per quadrant ---
   # Group by Plotcode and Quadrant code, count unique values in Species
@@ -63,7 +136,8 @@ species_richness_Q_1m <- function(location_id, config_list, base_input_dir, base
   # --- SECOND SHEET: Unique Species per Plotcode ---
   unique_Species_per_Plotcode <- df2_selected %>%
     group_by(Plotcode) %>%
-    summarise(unique_Species_count = n_distinct(Species), .groups = "drop")
+    summarise(unique_Species_count = n_distinct(Species),
+              .groups = "drop")
   
   # Perform inner join on columns "plotcode"
   # Re-selecting specific columns from df1 to avoid duplication before joining
@@ -87,14 +161,13 @@ species_richness_Q_1m <- function(location_id, config_list, base_input_dir, base
 }
 
 # Function that calculates the species richness at 100m scales for all files in the input dir
-species_richness_100m <- function(input_dir, base_output_dir) {
-  # This function processes multiple species .xlsx files containing species richness counts per plotcode and species occurrences. 
+species_richness_100m <- function(input_dir, output_dir) {
+  # This function processes multiple species .xlsx files containing species richness counts per plotcode and species occurrences.
   # It calculates mean species richness and true species richness per triangle defined in a combinations file.
   # * Plotcodes missing from the Species sheet are included and contribute zero species to species richness.
   # * Plotcodes not in triangles are excluded entirely.
   # * If a plot or triangle has no species, its species richness is set to 0
   # * Output is one row per triangle per file, with mean plot species richness, total species richness, number of plots, GPS coordinates.
-  
   
   # locate the plot combination file in the config directory
   comb_file_dir <- file.path(find_project_root(), "config")
@@ -106,13 +179,15 @@ species_richness_100m <- function(input_dir, base_output_dir) {
   xlsx_files <- list.files(input_dir, pattern = "\\.xlsx$", full.names = TRUE)
   
   print(paste("Found", length(xlsx_files), "xlsx files in", input_dir))
-
+  
   results <- list()
   
   for (f in xlsx_files) {
     print(f)
     sheet_names <- excel_sheets(f)
-    if (!("Species_count_Plotcode" %in% sheet_names && "Species" %in% sheet_names)) next
+    if (!("Species_count_Plotcode" %in% sheet_names &&
+          "Species" %in% sheet_names))
+      next
     
     # Remove " species richness.xlsx" from filename
     location_name <- sub(" species richness\\.xlsx$", "", basename(f))
@@ -156,12 +231,10 @@ species_richness_100m <- function(input_dir, base_output_dir) {
     species_richness <- triangle_plotcodes %>%
       group_by(Triangle) %>%
       summarize(plotcodes = list(Plotcode), .groups = "drop") %>%
-      mutate(total_species_richness = sapply(
-        plotcodes,
-        function(pc) {
-          length(unique(species_tri$Species[species_tri$Plotcode %in% pc & !is.na(species_tri$Species)]))
-        }
-      )) %>%
+      mutate(total_species_richness = sapply(plotcodes, function(pc) {
+        length(unique(species_tri$Species[species_tri$Plotcode %in% pc &
+                                            !is.na(species_tri$Species)]))
+      })) %>%
       select(Triangle, total_species_richness)
     
     
@@ -171,10 +244,18 @@ species_richness_100m <- function(input_dir, base_output_dir) {
     #  triangle_stats$total_species_richness[is.na(triangle_stats$total_species_richness)] <- 0
     
     results[[f]] <- triangle_stats
-    
   }
   
   final_summary <- bind_rows(results)
-  write_xlsx(final_summary, path = base_output_dir, "mean_and_total_alpha_diversity_100m.xlsx")
   
+  # if not already there, create directory "100m scale species richness" in the output dir
+  new_output_dir <- file.path(output_dir, "100m_scale")
+  if (!dir.exists(new_output_dir)) {
+    dir.create(new_output_dir)
+  }
+  
+  full_path <- file.path(new_output_dir, "mean_and_total_alpha_diversity_100m.xlsx")
+  write_xlsx(final_summary, path = full_path)
+  
+  return(final_summary)
 }

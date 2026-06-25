@@ -18,8 +18,7 @@ speciesrichnessEFN/
 │   ├── 06_train_models_and_shap.R
 │   ├── 07_predict_species_richness_with_models.R
 │   ├── 08_prediction_map_analysis.R
-│   ├── 09_render_report.R
-│   └── 10_run_all.R
+│   └── 09_run_all.R
 │   └── helpers.R                    # Helper functions used across multiple scripts
 ├── analysis/                        # Original analysis scripts (kept)
 ├── data/
@@ -27,7 +26,7 @@ speciesrichnessEFN/
 │   ├── processed-data/              # intermediate processed data (gitignored)
 │   └── prediction-maps/             # input maps for model-based predictions (gitignored)
 ├── reports/
-│   └── speciesrichness_workflow_report.Rmd
+│   └── speciesrichness_prediction_report.Rmd
 └── output/
 │   ├── models/                      # ML models and SHAP results (gitignored)
 │   └── maps/                        # maps containing predicted species richness (ML model outputs)
