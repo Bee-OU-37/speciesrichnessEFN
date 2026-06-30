@@ -27,10 +27,10 @@ for (loc in active_locations) {
     
     # Store the results in a list for further use
     results_all[[loc]] <- results
-    cat("  -> SUCCESS\n\n")
+    cat("  -> Species richness calculation SUCCESS\n\n")
     
   }, error = function(e) {
-    warning("Failed processing ", loc, ": ", e)
+    warning("Failed species richness processing ", loc, ": ", e)
   })
 }
 

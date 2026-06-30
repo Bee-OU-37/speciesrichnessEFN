@@ -134,15 +134,15 @@ species_richness_Q_1m <- function(location_id,
   merged_df1 <- inner_join(df1_selected, df2_summary, by = c("Plotcode", "Quadrant code"))
   
   # --- SECOND SHEET: Unique Species per Plotcode ---
-  unique_Species_per_Plotcode <- df2_selected %>%
+  unique_species_per_plotcode <- df2_selected %>%
     group_by(Plotcode) %>%
-    summarise(unique_Species_count = n_distinct(Species),
+    summarise(unique_species_count = n_distinct(Species),
               .groups = "drop")
   
   # Perform inner join on columns "plotcode"
   # Re-selecting specific columns from df1 to avoid duplication before joining
   df1_coords <- df1_selected %>% select(Plotcode, Latitude_GIS, Longitude_GIS)
-  merged_df2 <- inner_join(df1_coords, unique_Species_per_Plotcode, by = "Plotcode")
+  merged_df2 <- inner_join(df1_coords, unique_species_per_plotcode, by = "Plotcode")
   
   # Remove duplicates if any rows become identical after join
   unique_df2 <- distinct(merged_df2)
@@ -194,7 +194,7 @@ species_richness_100m <- function(input_dir, output_dir) {
     
     # Read plotcode-level species count and coordinates
     plotcode_df <- read_excel(f, sheet = "Species_count_Plotcode")
-    plotcode_df$unique_Species_count <- as.numeric(plotcode_df$unique_Species_count)
+    plotcode_df$unique_species_count <- as.numeric(plotcode_df$unique_species_count)
     plotcode_df$Plotcode <- as.numeric(plotcode_df$Plotcode)
     plotcode_df$Longitude_GIS <- as.numeric(plotcode_df$Longitude_GIS)
     plotcode_df$Latitude_GIS <- as.numeric(plotcode_df$Latitude_GIS)
@@ -215,12 +215,12 @@ species_richness_100m <- function(input_dir, output_dir) {
       select(Triangle, Plotcode) %>%
       distinct()
     
-    # Compute mean unique_Species_count and centroids per triangle
+    # Compute mean unique_species_count and centroids per triangle
     triangle_stats <- plotcode_tri %>%
       group_by(Triangle) %>%
       summarize(
         Location = first(Location),
-        mean_unique_Species_count = mean(unique_Species_count, na.rm = TRUE),
+        mean_unique_species_count = mean(unique_species_count, na.rm = TRUE),
         n_plots = n_distinct(Plotcode),
         triangle_longitude = mean(Longitude_GIS, na.rm = TRUE),
         triangle_latitude = mean(Latitude_GIS, na.rm = TRUE),
