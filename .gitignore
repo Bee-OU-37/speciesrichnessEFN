@@ -9,3 +9,7 @@ data/
 # Common generated outputs
 output/
 reports/*.html
+reports/*.docx
+
+# personalized readmes
+README\ voor*

@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 ```{r setup}
 library(dplyr)
+library(e1071)   # For skewness() and kurtosis()
+library(knitr)
 library(moments)
 library(readxl)
 
@@ -42,8 +44,6 @@ This report explores the Ecological Fractal Net (EFN) data, focusing on species 
 # Get all xlsx files from the processed_data file path, and put them together in a dataframe, with the last column being the filename (without extension), and the first column the Plotcode from the sheet Species_count_Plotcode, and the second column the unique_Species_count from the same sheet.
 
 base_dir <- file.path(config$paths$processed_data, "combined_results")
-print("Base directory for processed data:")
-print(base_dir)
 
 # read the xlsx file with species richness data
 excel_file <- file.path(base_dir, "All_locations_1m_specrich.xlsx")
@@ -73,32 +73,52 @@ plot(density(df$unique_Species_count, na.rm = TRUE), main = "Density Plot of Spe
 
 ```{r summary-stats}
 
-# Summary statistics of species richness
+# print Summary statistics of species richness
 summary(df$unique_Species_count)
-sd(df$unique_Species_count)
 
 # Boxplot of species richness
 boxplot(df$unique_Species_count, main = "Boxplot of Species Richness", ylab = "Species Richness")
 
-# Are there negative values in species richness?
-any(df$unique_Species_count < 0)
+```
 
-# Minimum, mean, median, maximum, standard deviation, CV, skewness, and kurtosis of species richness?
+
+Standard deviation: **`r sd(df$unique_Species_count)`**.
+
+Are there negative values in species richness? **`r any(df$unique_Species_count < 0)`**
+
+
+```{r alpha-stats-table, echo=FALSE, results='asis'}
+
+# Recalculate stats here if not available globally
 min_alpha <- min(df$unique_Species_count, na.rm = TRUE)
 mean_alpha <- mean(df$unique_Species_count, na.rm = TRUE)
 median_alpha <- median(df$unique_Species_count, na.rm = TRUE)
 max_alpha <- max(df$unique_Species_count, na.rm = TRUE)
 sd_alpha <- sd(df$unique_Species_count, na.rm = TRUE)
 cv_alpha <- sd_alpha / mean_alpha
-skewness_alpha <- skewness(df$unique_Species_count, na.rm = TRUE)
-kurtosis_alpha <- kurtosis(df$unique_Species_count, na.rm = TRUE)
-cat("Minimum species richness:", min_alpha, "\n")
-cat("Mean species richness:", mean_alpha, "\n")
-cat("Median species richness:", median_alpha, "\n")
-cat("Maximum species richness:", max_alpha, "\n")
-cat("Standard deviation of species richness:", sd_alpha, "\n")
-cat("Coefficient of variation of species richness:", cv_alpha, "\n")
-cat("Skewness of species richness:", skewness_alpha, "\n")  
-cat("Kurtosis of species richness:", kurtosis_alpha, "\n")
 
+# Build the data frame
+summary_stats <- data.frame(
+  Statistic = c("Minimum", "Mean", "Median", "Maximum", 
+                "SD", "CV (%)", "Skewness", "Kurtosis"),
+  Value = c(
+    min_alpha,
+    round(mean_alpha, 2),
+    round(median_alpha, 2),
+    max_alpha,
+    round(sd_alpha, 2),
+    round(cv_alpha * 100, 2),
+    round(skewness(df$unique_Species_count, na.rm = TRUE), 3),
+    round(kurtosis(df$unique_Species_count, na.rm = TRUE), 3)
+  )
+)
+
+# Render the table
+kable(summary_stats, 
+      caption = "Statistics for Unique Species Count",
+      col.names = c("Metric", "Value"),
+      digits = 2,
+      booktabs = TRUE,     # Adds professional horizontal lines
+      align = c("l", "r")        # Left-align labels, right-align values
+)
 ```
